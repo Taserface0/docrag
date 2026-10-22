@@ -1,0 +1,15 @@
+chromadb>=0.5
+rank_bm25>=0.2.2
+pypdf>=4.0
+streamlit>=1.37
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+python-dotenv>=1.0
+
+# Cross-encoder reranking (installs PyTorch; turn off with USE_RERANKER=false)
+sentence-transformers>=3.0
+
+# Dev
+pytest>=8.0
+reportlab>=4.0

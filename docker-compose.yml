@@ -1,0 +1,75 @@
+# One-command setup:  docker compose up --build
+#
+# Starts three things:
+#   ollama        the local model server (in its own container)
+#   ollama-pull   one-off job that downloads the chat + embedding models on first run
+#   ui            the DocRAG Streamlit app on http://localhost:8501
+# Optional REST API:  docker compose --profile api up --build   (http://localhost:8000/docs)
+#
+# Models and your index are kept in Docker volumes, so later starts are fast.
+# To change models, set CHAT_MODEL / EMBED_MODEL in .env (it is optional).
+
+x-app: &app
+  build: .
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    OLLAMA_BASE_URL: http://ollama:11434
+  volumes:
+    - docrag-data:/app/data  # separate from ./data used when you run without Docker
+  depends_on:
+    ollama-pull:
+      condition: service_completed_successfully
+  restart: unless-stopped
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama-models:/root/.ollama
+    # No published port, so it won't clash with an Ollama you may already run on 11434.
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+    # NVIDIA GPU (optional, much faster): uncomment if you have an NVIDIA card + drivers.
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  ollama-pull:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        echo "Downloading models (first run only, ~2.5 GB)..." &&
+        ollama pull ${CHAT_MODEL:-qwen2.5:3b} &&
+        ollama pull ${EMBED_MODEL:-nomic-embed-text} &&
+        echo "Models ready."
+    restart: "no"
+
+  ui:
+    <<: *app
+    ports: ["8501:8501"]
+
+  api:
+    <<: *app
+    profiles: ["api"]
+    command: ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports: ["8000:8000"]
+
+volumes:
+  ollama-models:
+  docrag-data:

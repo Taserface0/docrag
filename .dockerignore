@@ -1,0 +1,12 @@
+# Keep secrets, local data and caches out of the image
+.env
+data/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.vscode/
+.git/
+eval/testset.jsonl
+eval/results.json
