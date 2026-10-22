@@ -4,6 +4,16 @@ A retrieval-augmented generation (RAG) system built from scratch in Python. Uplo
 
 No LangChain or LlamaIndex: every stage is a small, readable module.
 
+**Highlights:** 90% top-5 retrieval accuracy with hybrid search + reranking (73% for dense search alone) · runs fully offline on a laptop with Ollama · answers cite file and page · 25 offline tests.
+
+![DocRAG answering a question with citations to four passages](docs/images/answer-with-citations.png)
+
+| Live progress while the local model works | Library and retrieval settings |
+| --- | --- |
+| ![Status box listing each step](docs/images/progress-status.png) | ![Sidebar with library and settings](docs/images/sidebar-settings.png) |
+
+📄 **[Full project report (PDF)](docs/DocRAG-Project-Report.pdf)**: architecture and flow diagrams, design decisions, evaluation, optimisations, security and how to run it.
+
 ## Architecture
 
 ```
